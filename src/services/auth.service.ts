@@ -2,9 +2,11 @@ import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
 import { createWorkspace } from './workspace.service';
 import { randomId, User, users } from '../data/store';
+import { getDatabase } from '../config/db';
 
-export const registerUser = ({ email, password, name }: { email: string; password: string; name: string }) => {
-  const existing = users.find((user) => user.email === email);
+export const registerUser = async ({ email, password, name }: { email: string; password: string; name: string }) => {
+  const database = await getDatabase();
+  const existing = database ? await database.collection<User>('users').findOne({ email }) : users.find((user) => user.email === email);
   if (existing) {
     throw Object.assign(new Error('User already exists'), { status: 409 });
   }
@@ -17,8 +19,12 @@ export const registerUser = ({ email, password, name }: { email: string; passwor
     createdAt: new Date().toISOString(),
   };
 
-  users.push(user);
-  const workspace = createWorkspace(user.id, {
+  if (database) {
+    await database.collection<User>('users').insertOne(user);
+  } else {
+    users.push(user);
+  }
+  const workspace = await createWorkspace(user.id, {
     name: `${user.name}'s Workspace`,
     slug: `${user.id}-workspace`,
   });
@@ -30,8 +36,11 @@ export const registerUser = ({ email, password, name }: { email: string; passwor
   };
 };
 
-export const loginUser = ({ email, password }: { email: string; password: string }) => {
-  const user = users.find((entry) => entry.email === email && entry.password === password);
+export const loginUser = async ({ email, password }: { email: string; password: string }) => {
+  const database = await getDatabase();
+  const user = database
+    ? await database.collection<User>('users').findOne({ email, password })
+    : users.find((entry) => entry.email === email && entry.password === password);
   if (!user) {
     throw Object.assign(new Error('Invalid credentials'), { status: 401 });
   }

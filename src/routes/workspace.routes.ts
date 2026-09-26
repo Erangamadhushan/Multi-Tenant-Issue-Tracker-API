@@ -5,18 +5,18 @@ import { createWorkspace, listWorkspaces } from '../services/workspace.service';
 
 export const workspaceRoutes = Router();
 
-workspaceRoutes.get('/', requireAuth, (req: AuthenticatedRequest, res, next) => {
+workspaceRoutes.get('/', requireAuth, async (req: AuthenticatedRequest, res, next) => {
   try {
-    res.status(200).json({ success: true, data: { workspaces: listWorkspaces(req.user!.id) } });
+    res.status(200).json({ success: true, data: { workspaces: await listWorkspaces(req.user!.id) } });
   } catch (error) {
     next(error);
   }
 });
 
-workspaceRoutes.post('/', requireAuth, (req: AuthenticatedRequest, res, next) => {
+workspaceRoutes.post('/', requireAuth, async (req: AuthenticatedRequest, res, next) => {
   try {
     const payload = createWorkspaceSchema.parse(req.body);
-    const workspace = createWorkspace(req.user!.id, payload);
+    const workspace = await createWorkspace(req.user!.id, payload);
     res.status(201).json({ success: true, data: { workspace } });
   } catch (error) {
     next(error);
