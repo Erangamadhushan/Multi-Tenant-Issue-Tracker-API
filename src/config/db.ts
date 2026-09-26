@@ -21,6 +21,13 @@ export const connectDatabase = async (): Promise<Db | null> => {
     return db;
   } catch (error) {
     console.warn('MongoDB unavailable, continuing in local in-memory mode:', (error as Error).message);
+    db = null;
+    if (client) {
+      await client.close();
+      client = null;
+    }
+    return null;
+  }
     return null;
   }
 };
