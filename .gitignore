@@ -1,0 +1,8 @@
+.vscode
+.azure
+.github/agents/
+.env
+node_modules
+dist/
+*.log
+*.err
