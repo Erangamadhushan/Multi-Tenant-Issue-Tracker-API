@@ -1,19 +1,37 @@
 import { Project, projects, randomId, workspaces } from '../data/store';
+import { getDatabase } from '../config/db';
 
-export const listProjects = (workspaceId: string) => {
-  const workspace = workspaces.find((entry) => entry.id === workspaceId);
+export const listProjects = async (workspaceId: string, ownerId: string) => {
+  const database = await getDatabase();
+  const workspace = database
+    ? await database.collection('workspaces').findOne({ id: workspaceId, ownerId })
+    : workspaces.find((entry) => entry.id === workspaceId && entry.ownerId === ownerId);
   if (!workspace) {
     throw Object.assign(new Error('Workspace not found'), { status: 404 });
   }
 
-  return projects.filter((project) => project.workspaceId === workspaceId);
+  return database
+    ? database.collection<Project>('projects').find({ workspaceId }).sort({ createdAt: 1 }).toArray()
+    : projects.filter((project) => project.workspaceId === workspaceId);
 };
 
 export const createProject = (
   workspaceId: string,
+  ownerId: string,
   { name, description, status }: { name: string; description: string; status: 'active' | 'archived' }
 ) => {
-  const workspace = workspaces.find((entry) => entry.id === workspaceId);
+  return createProjectInStore(workspaceId, ownerId, { name, description, status });
+};
+
+const createProjectInStore = async (
+  workspaceId: string,
+  ownerId: string,
+  { name, description, status }: { name: string; description: string; status: 'active' | 'archived' }
+) => {
+  const database = await getDatabase();
+  const workspace = database
+    ? await database.collection('workspaces').findOne({ id: workspaceId, ownerId })
+    : workspaces.find((entry) => entry.id === workspaceId && entry.ownerId === ownerId);
   if (!workspace) {
     throw Object.assign(new Error('Workspace not found'), { status: 404 });
   }
@@ -27,6 +45,10 @@ export const createProject = (
     createdAt: new Date().toISOString(),
   };
 
-  projects.push(project);
+  if (database) {
+    await database.collection<Project>('projects').insertOne(project);
+  } else {
+    projects.push(project);
+  }
   return project;
 };

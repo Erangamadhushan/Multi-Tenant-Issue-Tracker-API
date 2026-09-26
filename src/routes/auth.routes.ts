@@ -4,20 +4,20 @@ import { registerUser, loginUser } from '../services/auth.service';
 
 export const authRoutes = Router();
 
-authRoutes.post('/register', (req, res, next) => {
+authRoutes.post('/register', async (req, res, next) => {
   try {
     const payload = registerSchema.parse(req.body);
-    const result = registerUser(payload);
+    const result = await registerUser(payload);
     res.status(201).json({ success: true, data: result });
   } catch (error) {
     next(error);
   }
 });
 
-authRoutes.post('/login', (req, res, next) => {
+authRoutes.post('/login', async (req, res, next) => {
   try {
     const payload = loginSchema.parse(req.body);
-    const result = loginUser(payload);
+    const result = await loginUser(payload);
     res.status(200).json({ success: true, data: result });
   } catch (error) {
     next(error);

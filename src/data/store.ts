@@ -10,6 +10,7 @@ export interface User {
 
 export interface Workspace {
   id: string;
+  ownerId: string;
   name: string;
   slug: string;
   createdAt: string;

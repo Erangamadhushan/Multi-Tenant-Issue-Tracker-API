@@ -5,6 +5,7 @@ import { authRoutes } from './routes/auth.routes';
 import { workspaceRoutes } from './routes/workspace.routes';
 import { projectRoutes } from './routes/project.routes';
 import { taskRoutes } from './routes/task.routes';
+import { isDatabaseConnected } from './config/db';
 
 export const createApp = (): Express => {
   const app = express();
@@ -13,7 +14,8 @@ export const createApp = (): Express => {
   app.use(express.json());
 
   app.get('/api/health', (_req, res) => {
-    res.status(200).json({ status: 'ok', services: { database: 'pending' } });
+    const database = isDatabaseConnected() ? 'connected' : 'in_memory';
+    res.status(200).json({ status: 'ok', services: { database } });
   });
 
   app.use('/api/auth', authRoutes);
