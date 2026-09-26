@@ -1,7 +1,7 @@
 import { randomId, Task, tasks, workspaces, projects } from '../data/store';
 
-export const listTasks = (workspaceId: string, projectId: string) => {
-  const workspace = workspaces.find((entry) => entry.id === workspaceId);
+export const listTasks = (workspaceId: string, projectId: string, ownerId: string) => {
+  const workspace = workspaces.find((entry) => entry.id === workspaceId && entry.ownerId === ownerId);
   const project = projects.find((entry) => entry.id === projectId && entry.workspaceId === workspaceId);
 
   if (!workspace || !project) {
@@ -14,9 +14,10 @@ export const listTasks = (workspaceId: string, projectId: string) => {
 export const createTask = (
   workspaceId: string,
   projectId: string,
+  ownerId: string,
   { title, description, assigneeId, status }: { title: string; description: string; assigneeId?: string; status: 'todo' | 'in_progress' | 'done' }
 ) => {
-  const workspace = workspaces.find((entry) => entry.id === workspaceId);
+  const workspace = workspaces.find((entry) => entry.id === workspaceId && entry.ownerId === ownerId);
   const project = projects.find((entry) => entry.id === projectId && entry.workspaceId === workspaceId);
 
   if (!workspace || !project) {
@@ -42,10 +43,12 @@ export const updateTask = (
   workspaceId: string,
   projectId: string,
   taskId: string,
+  ownerId: string,
   patch: Partial<{ title: string; description: string; assigneeId: string; status: 'todo' | 'in_progress' | 'done' }>
 ) => {
+  const workspace = workspaces.find((entry) => entry.id === workspaceId && entry.ownerId === ownerId);
   const task = tasks.find((entry) => entry.id === taskId && entry.workspaceId === workspaceId && entry.projectId === projectId);
-  if (!task) {
+  if (!workspace || !task) {
     throw Object.assign(new Error('Task not found'), { status: 404 });
   }
 

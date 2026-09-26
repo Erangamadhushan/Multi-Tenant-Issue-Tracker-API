@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
+import { createWorkspace } from './workspace.service';
 import { randomId, User, users } from '../data/store';
 
 export const registerUser = ({ email, password, name }: { email: string; password: string; name: string }) => {
@@ -17,9 +18,14 @@ export const registerUser = ({ email, password, name }: { email: string; passwor
   };
 
   users.push(user);
+  const workspace = createWorkspace(user.id, {
+    name: `${user.name}'s Workspace`,
+    slug: `${user.id}-workspace`,
+  });
 
   return {
     user: { id: user.id, email: user.email, name: user.name, createdAt: user.createdAt },
+    workspace,
     token: jwt.sign({ id: user.id, email: user.email, name: user.name }, env.JWT_SECRET),
   };
 };

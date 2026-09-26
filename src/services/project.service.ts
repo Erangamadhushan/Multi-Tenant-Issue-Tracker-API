@@ -1,7 +1,7 @@
 import { Project, projects, randomId, workspaces } from '../data/store';
 
-export const listProjects = (workspaceId: string) => {
-  const workspace = workspaces.find((entry) => entry.id === workspaceId);
+export const listProjects = (workspaceId: string, ownerId: string) => {
+  const workspace = workspaces.find((entry) => entry.id === workspaceId && entry.ownerId === ownerId);
   if (!workspace) {
     throw Object.assign(new Error('Workspace not found'), { status: 404 });
   }
@@ -11,9 +11,10 @@ export const listProjects = (workspaceId: string) => {
 
 export const createProject = (
   workspaceId: string,
+  ownerId: string,
   { name, description, status }: { name: string; description: string; status: 'active' | 'archived' }
 ) => {
-  const workspace = workspaces.find((entry) => entry.id === workspaceId);
+  const workspace = workspaces.find((entry) => entry.id === workspaceId && entry.ownerId === ownerId);
   if (!workspace) {
     throw Object.assign(new Error('Workspace not found'), { status: 404 });
   }
