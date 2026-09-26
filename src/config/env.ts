@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const toNumber = (value: string | undefined, fallback: number) => {
-  const parsed = Number(value ?? fallback);
+  const parsed = value?.trim() ? Number(value) : fallback;
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
